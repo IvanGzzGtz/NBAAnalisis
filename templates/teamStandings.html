@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Dropdown</title>
+
+
+    <style>
+        /* Standings table css  */
+        .container {
+            width: 90%;
+            margin: 0 auto;
+            overflow-x: auto;
+            overflow-y: auto;
+            background-color: aquamarine;
+
+        }
+
+        .table-container {
+            max-height: 70vh;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            height: 50%;
+        }
+
+        th,
+        td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 1vh;
+            font-size: 2vh;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .dropdown {
+            width: 100%;
+            padding: 10px;
+            font-size: 10px;
+        }
+
+
+
+
+
+        .plots-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .plots-section {
+            flex: 70;
+            border: 1px solid;
+        }
+
+        .bets-aside {
+            flex: 30%;
+            border: 1px solid;
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        {% for col in columns %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        {% for val in row %}
+                        {% if val in teams_list %}
+                        <td><a href="{% url 'teamStandings' val %}">{{ val }}</a></td>
+                        {% else %}
+                        <td>{{ val }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="plots-container">
+
+            <aside class="bets-aside">
+                <h1> Team Analisis Types</h1>
+                <u>
+                    <a href="{% url 'wins' %}"><li>Wins & Loses</li></a>
+                </u>
+            </aside>
+            {% if yaxis %}
+            <section class="plots-section">
+                <div>
+                    <canvas id="myChart"></canvas>
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                <script>
+                    const ctx = document.getElementById('myChart');
+                    const teams_list = ([{% for item in teams_list %}'{{item}}', {% endfor %}])
+                    const teams_wins = ([{% for item in teams_wins %}'{{item}}', {% endfor %}])
+                    const yaxis = '{{yaxis}}'
+                    console.log({ teams_list })
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: teams_list,
+                            datasets: [{
+                                label: yaxis,
+                                data: teams_wins,
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        maxRotation: 90, // Rotate labels by 90 degrees
+                                        minRotation: 90,  // Set minimum rotation
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                </script>
+            </section>
+            {%endif%}
+        </div>
+    </div>
+
+    <body>
+
+</html>
