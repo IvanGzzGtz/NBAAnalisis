@@ -23,6 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.teamsStandings, name='home'),
     # path('<str:var>/', views.teamStandings, name='teamStandings'),
-    path('wins/', views.wins, name='wins'),
+    # path('column/<str:column>/', views.teamsStandingsColumn, name='column'),
 
 ]

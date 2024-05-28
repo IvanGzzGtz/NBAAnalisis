@@ -14,7 +14,8 @@
             margin: 0 auto;
             overflow-x: auto;
             overflow-y: auto;
-            background-color: aquamarine;
+            background-color: rgb(255, 255, 255);
+            max-width: 800px;
 
         }
 
@@ -33,7 +34,7 @@
             border: 1px solid #dddddd;
             text-align: left;
             padding: 1vh;
-            font-size: 2vh;
+            font-size: 1.5vh;
         }
 
         th {
@@ -44,6 +45,10 @@
             width: 100%;
             padding: 10px;
             font-size: 10px;
+        }
+
+        li {
+            font-size: xx-large;
         }
 
 
@@ -70,7 +75,92 @@
 </head>
 
 <body>
+    <div class="container">
+        <aside> 
+            <select id="columnDropdown">
+                {% for column_name in keys_analisis %}
+                <option value="{{ column_name }}">{{ column_name }}</option>            
+                {% endfor %}
+            </select>
+            <button onclick="updateChart()">Update Chart</button> <!-- Add button here -->
 
+        </aside>
+
+        <div class="plots-container">
+
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <canvas id="myChart"></canvas>
+            
+            <script>
+            
+                var myChart; // Define myChart globally
+            
+                function updateChart() {
+                    var select = document.getElementById("columnDropdown");
+                    var selectedValue = select.value;
+                    // Pass the selected column name to the server to fetch data
+                    updateChartWithData(selectedValue);
+                }
+            
+                function updateChartWithData(data) {
+                    const columnsAsList = {{ json_data|safe }};
+                    const XaxisLabels = columnsAsList.TeamName.slice(); // Copy XaxisLabels to avoid modifying the original
+                    const YaxisLabel = data;
+                    const chartData = columnsAsList[data].slice(); // Copy chartData to avoid modifying the original
+
+                    // Sort chartData while preserving the indices
+                    const indices = chartData.map((_, index) => index);
+                    indices.sort((a, b) => chartData[b] - chartData[a]); // Sort indices based on chartData values
+                    
+                    // Use sorted indices to reorder XaxisLabels and chartData simultaneously
+                    const sortedXaxisLabels = indices.map(index => XaxisLabels[index]);
+                    const sortedChartData = indices.map(index => chartData[index]);
+                    console.log(sortedXaxisLabels); // Check the sorted X axis labels
+                    console.log(sortedChartData); // Check the sorted X axis labels
+
+                if (!myChart) {
+                    // Initialize myChart if it's not already initialized
+                    const ctx = document.getElementById('myChart');
+                    myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedXaxisLabels,
+                            datasets: [{
+                                label: YaxisLabel,
+                                data: sortedChartData,
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        maxRotation: 90, // Rotate labels by 90 degrees
+                                        minRotation: 90, // Set minimum rotation
+                                        font: {
+                                        }
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // Update existing myChart with new data
+                    myChart.data.labels = sortedXaxisLabels;
+                    myChart.data.datasets[0].label = YaxisLabel;
+                    myChart.data.datasets[0].data = sortedChartData;
+                    myChart.update();
+                }
+                    }
+            </script>
+
+        </div>
+    </div>
     <div class="container">
         <div class="table-container">
             <table>
@@ -85,8 +175,8 @@
                     {% for row in rows %}
                     <tr>
                         {% for val in row %}
-                        {% if val in teams_list %}
-                        <td><a href="{% url 'teamStandings' val %}">{{ val }}</a></td>
+                        {% if val in XaxisLabels %}
+                        <td><a href="">{{ val }}</a></td>
                         {% else %}
                         <td>{{ val }}</td>
                         {% endif %}
@@ -99,59 +189,8 @@
         </div>
     </div>
 
-    <div class="container">
+    
 
-        <div class="plots-container">
-
-            <aside class="bets-aside">
-                <h1> Team Analisis Types</h1>
-                <u>
-                    <a href="{% url 'wins' %}"><li>Wins & Loses</li></a>
-                </u>
-            </aside>
-            {% if yaxis %}
-            <section class="plots-section">
-                <div>
-                    <canvas id="myChart"></canvas>
-                </div>
-
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-                <script>
-                    const ctx = document.getElementById('myChart');
-                    const teams_list = ([{% for item in teams_list %}'{{item}}', {% endfor %}])
-                    const teams_wins = ([{% for item in teams_wins %}'{{item}}', {% endfor %}])
-                    const yaxis = '{{yaxis}}'
-                    console.log({ teams_list })
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: teams_list,
-                            datasets: [{
-                                label: yaxis,
-                                data: teams_wins,
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            scales: {
-                                x: {
-                                    ticks: {
-                                        maxRotation: 90, // Rotate labels by 90 degrees
-                                        minRotation: 90,  // Set minimum rotation
-                                    }
-                                },
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    });
-                </script>
-            </section>
-            {%endif%}
-        </div>
-    </div>
 
     <body>
 
